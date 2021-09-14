@@ -1,6 +1,5 @@
 #![crate_type = "lib"]
 #![crate_name = "procstat"]
-#[allow(warnings)]
 
 use std::collections::HashMap;
 use std::{fs::File, io::{BufRead, BufReader}, path::Path};
@@ -22,7 +21,7 @@ use soft_irq::*;
 #[derive(Debug)]
 pub struct ProcStat {
     pub cpu: CPU,
-    pub cpus: HashMap<String,CPU>,
+    pub cpus: HashMap<usize,CPU>,
     pub interrupts: Interrupts,
     pub contexts: Contexts,
     pub boot_time: BootTime,
@@ -35,8 +34,23 @@ const KEY_INTERRUPTS: &str = "intr";
 const KEY_CONTEXTS: &str = "ctxt";
 const KEY_BOOT_TIME: &str = "btime";
 const KEY_SOFT_IRQ: &str = "softirq";
+const KEY_PROCESSES: &str = "processes";
+const KEY_PROCESSES_RUNNING: &str = "procs_running";
+const KEY_PROCESSES_BLOCKED: &str = "procs_blocked";
 
 impl ProcStat {
+    fn empty() -> Self {
+        Self {
+            cpu: CPU::empty(),
+            cpus: HashMap::new(),
+            interrupts: Interrupts::empty(),
+            contexts: Contexts::empty(),
+            boot_time: BootTime::empty(),
+            processes: Processes::empty(),
+            soft_irq: SoftIrq::empty(),
+        }
+    }
+
     pub fn read() -> ProcStat {
 
         let file = File::open(Path::new("/proc/stat")).unwrap();
@@ -45,68 +59,38 @@ impl ProcStat {
     }
 
     pub fn read_file(file: File) -> ProcStat {
+        let mut proc_stat = Self::empty();
 
-        let mut cpus: HashMap<String,CPU> = HashMap::new();
-        let cpu: CPU;
-        let mut interrupts: Interrupts = Interrupts::empty();
-        let mut contexts: Contexts = Contexts::empty();
-        let mut boot_time: BootTime = BootTime::empty();
-        let mut soft_irq: SoftIrq = SoftIrq::empty();
-
-        // let mut file_lines: HashMap<String,Vec<String>> = HashMap::new();
         let reader = BufReader::new(file);
         for line in reader.lines() {
             let line = line.unwrap();
             let mut tokenised = line.split_whitespace();
             let key = tokenised.next().unwrap_or("");
-            let values: Vec<u64> = tokenised.by_ref().map(|t| u64::from_str_radix(t, 10).unwrap()).collect();
+            let values: Vec<u64> = tokenised.by_ref().map(|t| u64::from_str_radix(t, 10).unwrap_or_default()).collect();
 
-            if key.starts_with(KEY_CPU) {
+            if key.eq(KEY_CPU) {
+                proc_stat.cpu = CPU::from_vec(values);
+            } else if key.starts_with(KEY_CPU) {
                 let cpu = CPU::from_vec(values);
-                cpus.insert(key.to_string(), cpu);
+                let cpu_index = usize::from_str_radix(key.split_at(3).1, 10).unwrap();
+                proc_stat.cpus.insert(cpu_index, cpu);
             } else if key.eq(KEY_INTERRUPTS) {
-                interrupts = Interrupts::from_vec(values);
+                proc_stat.interrupts = Interrupts::from_vec(values);
             } else if key.eq(KEY_CONTEXTS) {
-                contexts = Contexts::from_vec(values)
+                proc_stat.contexts = Contexts::from_vec(values);
             } else if key.eq(KEY_BOOT_TIME) {
-                boot_time = BootTime::from_vec(values)
+                proc_stat.boot_time = BootTime::from_vec(values);
             } else if key.eq(KEY_SOFT_IRQ) {
-                soft_irq = SoftIrq::from_vec(values)
+                proc_stat.soft_irq = SoftIrq::from_vec(values);
+            } else if key.eq(KEY_PROCESSES) {
+                proc_stat.processes.forks_since_boot = *values.first().unwrap();
+            } else if key.eq(KEY_PROCESSES_RUNNING) {
+                proc_stat.processes.running_processes = *values.first().unwrap();
+            } else if key.eq(KEY_PROCESSES_BLOCKED) {
+                proc_stat.processes.blocked_processes = *values.first().unwrap();
             }
         }
 
-        cpu = cpus.remove(KEY_CPU).unwrap();
-
-        let ps = ProcStat {
-            cpu,
-            cpus,
-            interrupts,
-            contexts,
-            boot_time,
-            processes: Processes {
-                forks_since_boot: 0,
-                running_processes: 0,
-                blocked_processes: 0,
-            },
-            soft_irq
-        };
-
-        print!("ps -> {:#?}", ps);
-
-        ps
-    }
-}
-
-
-#[cfg(test)]
-mod tests {
-    use crate::{ProcStat};
-
-    #[test]
-    fn it_works() {
-
-        let proc_stat: ProcStat = ProcStat::read();
-        
-        assert_eq!(proc_stat.cpu.user, 1);
+        proc_stat
     }
 }
