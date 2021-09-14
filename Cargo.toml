@@ -4,5 +4,6 @@ version = "1.0.0"
 authors = ["John G <botagar@gmail.com>"]
 edition = "2018"
 license = "MIT"
+description = "Parses the /proc/stat file into a struct."
 keywords = ["procstat", "proc", "stat", "parser", "unix"]
 categories = ["filesystem", "hardware-support", "os::unix-apis", "os::linux-apis", "parser-implementations"]
