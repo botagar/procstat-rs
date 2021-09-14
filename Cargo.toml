@@ -1,7 +1,8 @@
 [package]
 name = "procstat"
 version = "1.0.0"
+authors = ["John G <botagar@gmail.com>"]
 edition = "2018"
-
-
-[dependencies]
+license = "MIT"
+keywords = ["procstat", "proc", "stat", "parser", "unix"]
+categories = ["filesystem", "hardware-support", "os::unix-apis", "os::linux-apis", "parser-implementations"]
