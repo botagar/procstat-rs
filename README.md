@@ -2,7 +2,7 @@
 
 A simple parser for the `/proc/stat` file found on all unix based systems.
 
-Specifications for this file can be found on (Random Sites Like This)[https://man7.org/linux/man-pages/man5/proc.5.html] for linux.
+Specifications for this file can be found on [Random Sites Like This](https://man7.org/linux/man-pages/man5/proc.5.html).
 
 ## How to use
 
@@ -10,7 +10,7 @@ Import it into your `cargo.toml` as a dependency.
 
 ```
 [dependencies]
-procstat = "1.0.1"
+procstat = "1.0.2"
 ```
 
 Add it to the entry point of your project
