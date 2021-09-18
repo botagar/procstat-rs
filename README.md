@@ -10,7 +10,7 @@ Import it into your `cargo.toml` as a dependency.
 
 ```
 [dependencies]
-procstat = "1.0.2"
+procstat = "1.0.3"
 ```
 
 Add it to the entry point of your project

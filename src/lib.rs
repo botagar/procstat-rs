@@ -11,12 +11,12 @@ mod interrupts;
 mod processes;
 mod soft_irq;
 
-use boot_time::*;
-use cpu::*;
-use contexts::*;
-use interrupts::*;
-use processes::*;
-use soft_irq::*;
+pub use boot_time::*;
+pub use cpu::*;
+pub use contexts::*;
+pub use interrupts::*;
+pub use processes::*;
+pub use soft_irq::*;
 
 #[derive(Debug)]
 pub struct ProcStat {
