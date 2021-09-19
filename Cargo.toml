@@ -1,6 +1,6 @@
 [package]
 name = "procstat"
-version = "1.0.3"
+version = "1.0.4"
 authors = ["John G <botagar@gmail.com>"]
 edition = "2018"
 license = "MIT"

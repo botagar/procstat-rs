@@ -42,6 +42,10 @@ impl CPU {
             guest_nice: unwrap_or_0(cpu_vals.get(9)),
         }
     }
+
+    pub fn total(&self) -> u64 {
+        self.user + self.nice + self.system + self.idle + self.iowait + self.irq + self.softirq + self.steal + self.guest + self.guest_nice
+    }
 }
 
 fn unwrap_or_0(wrapped: Option<&u64>) -> u64 {
@@ -104,5 +108,13 @@ mod tests {
         assert_eq!(cpu.steal, 0);
         assert_eq!(cpu.guest, 0);
         assert_eq!(cpu.guest_nice, 0);
+    }
+
+    #[test]
+    fn sums_together_all_fields() {
+        let test_data: Vec<u64> = vec![46044323, 3582636, 101626186, 3138393496, 2100903, 1];
+        let cpu: CPU = CPU::from_vec(test_data);
+
+        assert_eq!(cpu.total(), 3291747545);
     }
 }
